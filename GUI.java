@@ -19,7 +19,7 @@ public class GUI extends JFrame {
 	public GUI(final ClientContext ctx) {
 		start = new JButton("Start Script");
 		exit = new JButton("Cancel");
-		fish = new JComboBox<>(new String[] { "Lobster", "Swordfish", "Shark" });
+		fish = new JComboBox<>(new String[] { "Lobster", "Shark" });
 		//will add more locations later
 		bank = new JComboBox<>(new String[] { "Catherby" });
 
@@ -46,6 +46,7 @@ public class GUI extends JFrame {
 				Fisher.actualSpot = Resources.spot[index];
 				Fisher.actualBooth = Resources.booth[index2];
 				Fisher.actualAction = Resources.action[index];
+				Fisher.actualUtil = Resources.util[index];
 				dispose();
 			}
 		});

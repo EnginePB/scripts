@@ -13,8 +13,7 @@ import org.powerbot.script.PaintListener;
 import org.powerbot.script.PollingScript;
 import org.powerbot.script.Script;
 import org.powerbot.script.rt4.ClientContext;
-import org.powerbot.script.rt4.GameObject;
-import org.powerbot.script.rt4.Npc;
+import org.powerbot.script.rt4.Constants;
 
 @Script.Manifest(name = "BFisher", description = "Fishes.", properties = "game=6;")
 
@@ -29,8 +28,9 @@ public class Fisher extends PollingScript<ClientContext>implements PaintListener
 	double runTime;
 
 	private GUI gui;
-	static int actualSpot, actualBooth, actualFish;
+	static int actualSpot, actualBooth, actualFish, actualUtil;
 	static String actualAction;
+	public static int state = 0;
 
 	public void start() {
 		gui = new GUI(ctx);
@@ -40,6 +40,7 @@ public class Fisher extends PollingScript<ClientContext>implements PaintListener
 		}
 		start = System.currentTimeMillis();
 		taskList.addAll(Arrays.asList(new Banking(ctx), new Fishing(ctx), new Waiting(ctx)));
+		level = ctx.skills.realLevel(Constants.SKILLS_FISHING);
 	}
 
 	@Override
@@ -51,8 +52,6 @@ public class Fisher extends PollingScript<ClientContext>implements PaintListener
 
 	@Override
 	public void repaint(Graphics gg) {
-		Npc fishSpot = ctx.npcs.select().id(Resources.spot).poll();
-		GameObject b = ctx.objects.select().id(Resources.booth).poll();
 		int hours = (int) (System.currentTimeMillis() - start) / 3600000;
 		int minutes = (int) (System.currentTimeMillis() - start) / 60000 - hours * 60;
 		int seconds = (int) (System.currentTimeMillis() - start) / 1000 - hours * 3600 - minutes * 60;
@@ -68,8 +67,10 @@ public class Fisher extends PollingScript<ClientContext>implements PaintListener
 		gg.drawString("Runtime: " + currentTime, 8, 20);
 		gg.drawString("Exp: " + exp + " (" + expHour + ")", 8, 40);
 		gg.drawString("Caught: " + amount + " (" + amountHour + ")", 8, 60);
-		gg.drawString(status, 8, 80);
-		gg.drawRect(5, 5, 115, 80);
+		gg.drawString("Level: " + ctx.skills.realLevel(Constants.SKILLS_FISHING) + " ("
+				+ (ctx.skills.realLevel(Constants.SKILLS_FISHING) - level) + ")", 8, 80);
+		gg.drawString(status, 8, 100);
+		gg.drawRect(5, 5, 135, 80);
 	}
 
 	@Override

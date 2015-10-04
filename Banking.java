@@ -1,6 +1,5 @@
 package Fisher;
 
-
 import java.util.concurrent.Callable;
 
 import org.powerbot.script.Condition;
@@ -21,7 +20,7 @@ public class Banking extends Task<ClientContext> {
 	@Override
 	public void execute() {
 		GameObject b = ctx.objects.select().id(Fisher.actualBooth).nearest().poll();
-		if (!ctx.objects.select().id(Fisher.actualBooth).isEmpty()) {
+		if (!ctx.objects.id(Fisher.actualBooth).isEmpty()) {
 			if (b.inViewport()) {
 				Fisher.status = "Attempting to bank";
 				if (ctx.bank.opened()) {
@@ -37,7 +36,7 @@ public class Banking extends Task<ClientContext> {
 					}, 50, 50);
 				}
 			} else {
-				Fisher.status = "Walking to tile[bank]";
+				Fisher.status = "Walking to bank";
 				ctx.movement.step(b.tile());
 			}
 		} else {

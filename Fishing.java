@@ -23,7 +23,7 @@ public class Fishing extends Task<ClientContext> {
 	public void execute() {
 		TilePath path = ctx.movement.newTilePath(Resources.thePath);
 		Npc fishSpot = ctx.npcs.select().id(Fisher.actualSpot).nearest().poll();
-		if (!ctx.npcs.select().id(Fisher.actualSpot).isEmpty()) {
+		if (!ctx.npcs.id(Fisher.actualSpot).isEmpty()) {
 			if (fishSpot.inViewport()) {
 				Fisher.status = "Attempting to fish";
 				fishSpot.interact(Fisher.actualAction);
@@ -35,7 +35,7 @@ public class Fishing extends Task<ClientContext> {
 				}, 50, 50);
 			} else {
 				if (fishSpot.tile().distanceTo(ctx.players.local().tile()) > 5) {
-					Fisher.status = "Walking to tile[spot]";
+					Fisher.status = "Walking to spot";
 					ctx.movement.step(fishSpot.tile());
 					for (int i = 0; i < 400 && ctx.players.local().inMotion(); i++)
 						Condition.sleep(10);
@@ -44,7 +44,7 @@ public class Fishing extends Task<ClientContext> {
 		} else {
 			Fisher.status = "Walking to spot";
 			if (path.reverse().traverse()) {
-				Fisher.status = "Turning camera[2]";
+				Fisher.status = "Turning camera";
 				ctx.camera.turnTo(fishSpot);
 			}
 		}
