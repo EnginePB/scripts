@@ -15,12 +15,18 @@ import org.powerbot.script.Script;
 import org.powerbot.script.rt4.ClientContext;
 import org.powerbot.script.rt4.Constants;
 
+import Fisher.resources.GUI;
+import Fisher.resources.Resources;
+import Fisher.resources.Task;
+import Fisher.tasks.Banking;
+import Fisher.tasks.Fish;
+import Fisher.tasks.Wait;
+
 @Script.Manifest(name = "BFisher", description = "Fishes.", properties = "game=6;")
 
-public class Fisher extends PollingScript<ClientContext>implements PaintListener, MessageListener {
+public class Fisher<C extends ClientContext> extends PollingScript<C>implements PaintListener, MessageListener {
 
-	public List<Task> taskList = new ArrayList<>();
-	static String status = "None";
+	public static List<Task> taskList = new ArrayList<>();
 	public int amount = 0, exp = 0, level = 0;
 	int amountHour, expHour;
 	long start;
@@ -28,19 +34,12 @@ public class Fisher extends PollingScript<ClientContext>implements PaintListener
 	double runTime;
 
 	private GUI gui;
-	static int actualSpot, actualBooth, actualFish, actualUtil;
-	static String actualAction;
-	public static int state = 0;
-
+	
 	public void start() {
 		gui = new GUI(ctx);
 		gui.setVisible(true);
-		while (gui.isVisible()) {
-			Condition.sleep(1);
-		}
-		start = System.currentTimeMillis();
-		taskList.addAll(Arrays.asList(new Banking(ctx), new Fishing(ctx), new Waiting(ctx)));
 		level = ctx.skills.realLevel(Constants.SKILLS_FISHING);
+		start = System.currentTimeMillis();
 	}
 
 	@Override
@@ -48,6 +47,10 @@ public class Fisher extends PollingScript<ClientContext>implements PaintListener
 		if (m.text().contains("You catch")) {
 			amount++;
 		}
+	}
+
+	public static void addTask(Task t) {
+		taskList.add(t);
 	}
 
 	@Override
@@ -62,15 +65,15 @@ public class Fisher extends PollingScript<ClientContext>implements PaintListener
 		expHour = (int) (exp / runTime);
 		exp = amount * 90;
 		gg.setColor(new Color(0, 0, 0, 146));
-		gg.fillRect(5, 5, 115, 80);
+		gg.fillRect(5, 5, 135, 100);
 		gg.setColor(Color.GREEN);
 		gg.drawString("Runtime: " + currentTime, 8, 20);
 		gg.drawString("Exp: " + exp + " (" + expHour + ")", 8, 40);
 		gg.drawString("Caught: " + amount + " (" + amountHour + ")", 8, 60);
 		gg.drawString("Level: " + ctx.skills.realLevel(Constants.SKILLS_FISHING) + " ("
 				+ (ctx.skills.realLevel(Constants.SKILLS_FISHING) - level) + ")", 8, 80);
-		gg.drawString(status, 8, 100);
-		gg.drawRect(5, 5, 135, 80);
+		gg.drawString(Resources.status, 8, 100);
+		gg.drawRect(5, 5, 135, 100);
 	}
 
 	@Override

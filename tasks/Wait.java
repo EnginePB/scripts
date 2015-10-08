@@ -1,16 +1,19 @@
-package Fisher;
+package Fisher.tasks;
 
 import java.awt.Point;
+
+import Fisher.resources.Resources;
+import Fisher.resources.Task;
 
 import org.powerbot.script.Condition;
 import org.powerbot.script.Random;
 import org.powerbot.script.rt4.ClientContext;
 
-public class Waiting extends Task<ClientContext> {
+public class Wait extends Task<ClientContext> {
 
 	public long nextAntiban = Random.nextInt(4000, 6000);
-
-	public Waiting(ClientContext ctx) {
+	
+	public Wait(ClientContext ctx) {
 		super(ctx);
 	}
 
@@ -40,7 +43,7 @@ public class Waiting extends Task<ClientContext> {
 
 	@Override
 	public void execute() {
-		Fisher.status = "Fishing";
+		Resources.status = "Fishing";
 		while (ctx.players.local().animation() != -1) {
 			antiBan();
 		}

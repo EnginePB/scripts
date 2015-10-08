@@ -1,8 +1,11 @@
-package Fisher;
+package Fisher.resources;
 
 import javax.swing.*;
 
 import org.powerbot.script.rt4.ClientContext;
+
+import Fisher.Fisher;
+import Fisher.tasks.*;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -16,15 +19,17 @@ public class GUI extends JFrame {
 	final JComboBox<String> fish;
 	final JComboBox<String> bank;
 
+	boolean done;
+
 	public GUI(final ClientContext ctx) {
 		start = new JButton("Start Script");
 		exit = new JButton("Cancel");
-		fish = new JComboBox<>(new String[] { "Lobster", "Shark" });
-		//will add more locations later
+		fish = new JComboBox<>(new String[] { "Lobster", "Swordfish", "Shark" });
+		// will add more locations later
 		bank = new JComboBox<>(new String[] { "Catherby" });
 
-		this.setLocationRelativeTo(Frame.getFrames()[0]);
 		this.setTitle("GUI");
+		this.setLocationRelativeTo(Frame.getFrames()[0]);
 
 		this.add(bank);
 		this.add(fish);
@@ -40,13 +45,17 @@ public class GUI extends JFrame {
 		start.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				done = true;
 				int index = fish.getSelectedIndex();
 				int index2 = bank.getSelectedIndex();
-				Fisher.actualFish = Resources.fish[index];
-				Fisher.actualSpot = Resources.spot[index];
-				Fisher.actualBooth = Resources.booth[index2];
-				Fisher.actualAction = Resources.action[index];
-				Fisher.actualUtil = Resources.util[index];
+				Resources.actualFish = Resources.fish[index];
+				Resources.actualSpot = Resources.spot[index];
+				Resources.actualBooth = Resources.booth[index2];
+				Resources.actualAction = Resources.action[index];
+				Resources.actualUtil = Resources.util[index];
+				Fisher.addTask(new Fish(ctx));
+				Fisher.addTask(new Banking(ctx));
+				Fisher.addTask(new Wait(ctx));
 				dispose();
 			}
 		});
