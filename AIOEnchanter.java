@@ -24,25 +24,32 @@ import java.util.concurrent.Callable;
 public class AIOEnchanter<C extends ClientContext> extends PollingScript<C>implements PaintListener {
 
 	private static final DecimalFormat k = new DecimalFormat("#.#");
-	boolean paintMouse = true;
-	String jewelry = "", enchanted = "";
-	int widget = 218, components[] = { 6, 17, 29, 37, 52, 64 };
-	int component = 0;
-	boolean need = false;
-	String now = "None";
-	public int amount = 0, exp = 0, level = 0;
-	int amountHour, expHour;
-	long start, starte;
-	String currentTime;
-	double runTime;
-	GUI gui;
-	double per;
-	Magic.Spell spell = null;
+	public static boolean paintMouse = true;
+	public static String jewelry = "", enchanted = "";
+	public final int widget = 218, components[] = { 6, 17, 29, 37, 52, 64 };
+	public static int component = 0;
+	private String now = "None";
+	private int amount = 0, exp = 0, level = 0;
+	private int amountHour, expHour;
+	private long start, starte;
+	private String currentTime;
+	private double runTime;
+	public GUI gui;
+	public static double per;
+	public Magic.Spell spell = null;
 
 	public void start() {
 		if (ctx.game.loggedIn()) {
-			gui = new GUI(ctx);
-			gui.setVisible(true);
+			EventQueue.invokeLater(new Runnable() {
+				public void run() {
+					try {
+						gui = new GUI(ctx);
+						gui.setVisible(true);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			});
 			level = ctx.skills.realLevel(Constants.SKILLS_MAGIC);
 			start = System.currentTimeMillis();
 			starte = ctx.skills.experience(Constants.SKILLS_MAGIC);
@@ -60,7 +67,7 @@ public class AIOEnchanter<C extends ClientContext> extends PollingScript<C>imple
 				+ String.format("%02d", seconds);
 		runTime = (double) (System.currentTimeMillis() - start) / 3600000;
 		exp = (int) (ctx.skills.experience(Constants.SKILLS_MAGIC) - starte);
-		amount = (int)(exp / per);
+		amount = (int) (exp / per);
 		amountHour = (int) (amount / runTime);
 		expHour = (int) (exp / runTime);
 		int levels = ctx.skills.realLevel(Constants.SKILLS_MAGIC) - level;
@@ -123,18 +130,13 @@ public class AIOEnchanter<C extends ClientContext> extends PollingScript<C>imple
 				now = "Inventory";
 				if (ctx.bank.close()) {
 					if (ctx.widgets.component(widget, component).borderThickness() == 2) {
-						if (contains(jewelry)) {
-							need = false;
-							action(jewelry);
-							Condition.wait(new Callable<Boolean>() {
-								@Override
-								public Boolean call() throws Exception {
-									return ctx.widgets.component(widget, component).visible();
-								}
-							}, 50, 50);
-						} else {
-							need = true;
-						}
+						action(jewelry);
+						Condition.wait(new Callable<Boolean>() {
+							@Override
+							public Boolean call() throws Exception {
+								return ctx.widgets.component(widget, component).visible();
+							}
+						}, 50, 50);
 					} else {
 						ctx.game.tab(Game.Tab.MAGIC);
 					}
@@ -146,39 +148,32 @@ public class AIOEnchanter<C extends ClientContext> extends PollingScript<C>imple
 					if (!contains("Cosmic")) {
 						ctx.bank.withdraw(564, Bank.Amount.ALL);
 					}
-					if (contains(jewelry)) {
-						ctx.bank.close();
-						need = false;
+					if (contains(enchanted)) {
+						Item e = ctx.inventory.select().name(enchanted).poll();
+						ctx.bank.deposit(e.id(), Bank.Amount.ALL);
 					} else {
-						if (contains(enchanted)) {
-							Item e = ctx.inventory.select().name(enchanted).poll();
-							ctx.bank.deposit(e.id(), Bank.Amount.ALL);
-						} else {
-							Item j = ctx.bank.select().name(jewelry).poll();
-							ctx.bank.withdraw(j.id(), Bank.Amount.ALL);
-						}
+						Item j = ctx.bank.select().name(jewelry).poll();
+						ctx.bank.withdraw(j.id(), Bank.Amount.ALL);
 					}
-
 				} else {
-					if (contains(jewelry)) {
-						need = false;
+					if (ctx.widgets.component(widget, component).borderThickness() != 2) {
+						ctx.objects.select().name("Bank booth").nearest().poll().interact("Bank", "Bank booth");
+						Condition.wait(new Callable<Boolean>() {
+							@Override
+							public Boolean call() throws Exception {
+								return ctx.bank.opened();
+							}
+						}, 50, 50);
 					} else {
-						if (ctx.widgets.component(widget, component).borderThickness() != 2) {
-							ctx.objects.select().name("Bank booth").nearest().poll().interact("Bank", "Bank booth");
-							Condition.wait(new Callable<Boolean>() {
-								@Override
-								public Boolean call() throws Exception {
-									return ctx.bank.opened();
-								}
-							}, 50, 50);
-						} else {
-							ctx.objects.name("Bank booth").nearest().poll().click();
-						}
+						ctx.objects.name("Bank booth").nearest().poll().click();
 					}
 				}
 
 				break;
 			case DEFAULT:
+				if (ctx.bank.close()) {
+					ctx.game.tab(Game.Tab.INVENTORY);
+				}
 				now = "Default";
 				break;
 			}
