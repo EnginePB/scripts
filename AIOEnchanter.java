@@ -24,9 +24,10 @@ import java.util.concurrent.Callable;
 public class AIOEnchanter<C extends ClientContext> extends PollingScript<C>implements PaintListener {
 
 	private static final DecimalFormat k = new DecimalFormat("#.#");
-	public static boolean paintMouse = true;
-	public static String jewelry = "", enchanted = "";
+	public boolean paintMouse = true;
+	public String jewelry = "", enchanted = "";
 	public final int widget = 218, components[] = { 6, 17, 29, 37, 52, 64 };
+	public int cosmic = 564;
 	public static int component = 0;
 	private String now = "None";
 	private int amount = 0, exp = 0, level = 0;
@@ -35,7 +36,7 @@ public class AIOEnchanter<C extends ClientContext> extends PollingScript<C>imple
 	private String currentTime;
 	private double runTime;
 	public GUI gui;
-	public static double per;
+	public double per;
 	public Magic.Spell spell = null;
 
 	public void start() {
@@ -99,15 +100,12 @@ public class AIOEnchanter<C extends ClientContext> extends PollingScript<C>imple
 		Point p = ctx.inventory.name(id).first().poll().centerPoint();
 		int x = Random.nextInt(p.x - 6, p.x + 6);
 		int y = Random.nextInt(p.y - 6, p.y + 6);
-		if (ctx.input.click(x, y, true)) {
-			return true;
-		}
-		return false;
+		return ctx.input.click(x, y, true);
 	}
 
 	@Override
 	public void poll() {
-		if (jewelry != "") {
+		if (!jewelry.equals("")) {
 			final state s = states();
 			switch (s) {
 			case WHEN_MAGIC:
@@ -130,13 +128,14 @@ public class AIOEnchanter<C extends ClientContext> extends PollingScript<C>imple
 				now = "Inventory";
 				if (ctx.bank.close()) {
 					if (ctx.widgets.component(widget, component).borderThickness() == 2) {
-						action(jewelry);
-						Condition.wait(new Callable<Boolean>() {
-							@Override
-							public Boolean call() throws Exception {
-								return ctx.widgets.component(widget, component).visible();
-							}
-						}, 50, 50);
+						if (action(jewelry)) {
+							Condition.wait(new Callable<Boolean>() {
+								@Override
+								public Boolean call() throws Exception {
+									return ctx.widgets.component(widget, component).visible();
+								}
+							}, 50, 50);
+						}
 					} else {
 						ctx.game.tab(Game.Tab.MAGIC);
 					}
@@ -146,7 +145,7 @@ public class AIOEnchanter<C extends ClientContext> extends PollingScript<C>imple
 				now = "Bank";
 				if (ctx.bank.opened()) {
 					if (!contains("Cosmic")) {
-						ctx.bank.withdraw(564, Bank.Amount.ALL);
+						ctx.bank.withdraw(cosmic, Bank.Amount.ALL);
 					}
 					if (contains(enchanted)) {
 						Item e = ctx.inventory.select().name(enchanted).poll();
